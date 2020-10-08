@@ -34,20 +34,20 @@ def cal_change(fund, etf, last_updated_date, date):
 def main(fund, url, agency, last_updated_date):
     def _etf(agency):
         return {
-            'ARK': lambda x, y: ark(x, y),
-            'Invesco': lambda x, y: invesco(x, y),
-            'Pro Shares': lambda x, y: pro_shares(x, y),
-            'SPDR': lambda x, y: spdr(x, y),
-            'iShare': lambda x, y: i_shares(x, y),
-            'GS': lambda x, y: gs(x, y),
-            'JPM': lambda x, y: jpm(x, y)
+            'ARK': lambda x, y, z: ark(x, y, z),
+            'Invesco': lambda x, y, z: invesco(x, y, z),
+            'Pro Shares': lambda x, y, z: pro_shares(x, y, z),
+            'SPDR': lambda x, y, z: spdr(x, y, z),
+            'iShare': lambda x, y, z: i_shares(x, y, z),
+            'GS': lambda x, y, z: gs(x, y, z),
+            'JPM': lambda x, y, z: jpm(x, y, z)
 
-        }[agency](url, last_updated_date)
+        }[agency](url, last_updated_date, fund)
 
     etf_df = _etf(agency=agency)
     if etf_df is not None:
         date = etf_df['date'][0]
-        etf_df = cal_change(fund, etf_df, last_updated_date.strftime('%d/%m/%Y'), date)
+        etf_df = cal_change(fund, etf_df, last_updated_date, date)
         print(etf_df)
         dataframe_to_mongo(fund, etf_df)
         update_date(fund, date)
@@ -63,14 +63,14 @@ if __name__ == '__main__':
             url = ETF['url']
             agency = ETF['agency']
 
-            last_updated_date = datetime.strptime(ETF['last_updated_date'], '%d/%m/%Y')
+            last_updated_date = ETF['last_updated_date']
 
-            print(fund, "|", ETF['last_updated_date'], "|", agency)
+            print(fund, "|", last_updated_date, "|", agency)
 
-            if last_updated_date.weekday() != 4:
-                #if 'GS' in ETF['agency']:
-                main(fund, url, agency, last_updated_date)
-                time.sleep(5)
+            # if last_updated_date.weekday() != 4:
+            # if 'GS' in ETF['agency']:
+            main(fund, url, agency, last_updated_date)
+            time.sleep(5)
 
         except Exception as Argument:
             logging.error('ETF', ETF['fund'], ':\nThis is the Argument:', Argument)

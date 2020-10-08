@@ -6,46 +6,45 @@ import numpy as np
 import re
 
 
-def ark(url, last_updated_date):
+def ark(url, last_updated_date, fund):
     req = requests.get(url)
     df = pd.read_csv(io.StringIO(req.content.decode('utf-8')))
     date = datetime.strptime(df['date'][0], '%m/%d/%Y')
-    nDate = date.strftime('%d/%m/%Y')
 
     if last_updated_date < date:
         df = df[df["ticker"].notnull()]
         df = df.rename({'weight(%)': 'weight'},
                        axis='columns')
-        df.loc[:, 'date'] = nDate
+        df.loc[:, 'date'] = date
+        df.loc[:, 'fund'] = fund
 
-        return df[['ticker', 'shares', 'weight', 'date']]
+        return df[['ticker', 'shares', 'weight', 'date''fund']]
 
 
-def invesco(url, last_updated_date):
+def invesco(url, last_updated_date, fund):
     req = requests.get(url)
     df = pd.read_csv(io.StringIO(req.content.decode('utf-8')))
     date = datetime.strptime(df['Date'][0], '%m/%d/%Y')
-    nDate = date.strftime('%d/%m/%Y')
 
     if last_updated_date < date:
         df = df.rename({'Holding Ticker': 'ticker', 'Shares/Par Value': 'shares', 'Weight': 'weight', 'Date': 'date'},
                        axis='columns')
 
         df = df[df['ticker'].notnull()]
-        df.loc[:, 'date'] = nDate
+        df.loc[:, 'date'] = date
+        df.loc[:, 'fund'] = fund
         df = df[~df['ticker'].str.contains('-')]
         df['ticker'] = df['ticker'].str.replace(' ', '').astype(str)
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
 
-        return df[['ticker', 'shares', 'weight', 'date']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
-def pro_shares(url, last_updated_date):
+def pro_shares(url, last_updated_date, fund):
     req = requests.get(url)
     df = pd.read_csv(io.StringIO(req.content.decode('utf-8')), sep="\t", header=None)
 
     date = datetime.strptime(str(df.iat[1, 0])[6:15], '%m/%d/%Y')
-    nDate = date.strftime('%d/%m/%Y')
 
     if last_updated_date < date:
         df = df.drop([0, 1, 2])
@@ -66,17 +65,18 @@ def pro_shares(url, last_updated_date):
         df.replace(to_replace=r'^\s*$', value=np.nan, regex=True, inplace=True)
         df = df[df['SecurityTicker'].notnull()]
         df = df.rename({'SecurityTicker': 'ticker', 'Shares/Contracts': 'shares'}, axis='columns')
-        df.loc[:, 'date'] = nDate
+        df.loc[:, 'date'] = date
+        df.loc[:, 'fund'] = fund
+
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'date']]
+        return df[['ticker', 'shares', 'date', 'fund']]
 
 
-def spdr(url, last_updated_date):
+def spdr(url, last_updated_date, fund):
     df = pd.read_excel(url, header=None)
     date = datetime.strptime(str(df.iat[2, 1])[6:], '%d-%b-%Y')
-    nDate = date.strftime('%d/%m/%Y')
 
     if last_updated_date < date:
         df = df.drop([0, 1, 2, 3])
@@ -94,20 +94,21 @@ def spdr(url, last_updated_date):
             df = df[df['LocalCurrency'] == 'USD']
             df = df[df['SEDOL'] != 'Unassigned']
 
-        df.loc[:, 'date'] = nDate
+        df.loc[:, 'date'] = date
+        df.loc[:, 'fund'] = fund
+
         df['ticker'] = df['ticker'].str.replace(' US', '')
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'weight', 'date']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
-def i_shares(url, last_updated_date):
+def i_shares(url, last_updated_date, fund):
     req = requests.get(url)
 
     df = pd.read_csv(io.StringIO(req.content.decode('utf-8')), sep="\t", header=None)
     date = datetime.strptime(str(df.iat[1, 0].split('"')[1]), '%b %d, %Y')
-    nDate = date.strftime('%d/%m/%Y')
 
     if last_updated_date < date:
         df = df.drop([0, 1, 2, 3, 4, 5, 6, 7, 8])
@@ -133,17 +134,17 @@ def i_shares(url, last_updated_date):
         df = df[(df['Exchange'] == 'New York Stock Exchange Inc.') | (df['Exchange'] == 'NASDAQ')]
 
         df = df.rename({'Ticker': 'ticker', 'Shares': 'shares', 'Weight(%)': 'weight'}, axis='columns')
-        df.loc[:, 'date'] = nDate
+        df.loc[:, 'date'] = date
+        df.loc[:, 'fund'] = fund
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'weight', 'date']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
-def gs(url, last_updated_date):
+def gs(url, last_updated_date, fund):
     df = pd.read_excel(url, header=None)
 
     date = df[0][3]
-    nDate = date.strftime('%d/%m/%Y')
 
     if last_updated_date < date:
         df = df.drop([0, 1])
@@ -161,17 +162,18 @@ def gs(url, last_updated_date):
         df = df[df['Cusip'] != '--']
         df = df.reset_index()
 
-        df.loc[:, 'date'] = nDate
+        df.loc[:, 'date'] = date
+        df.loc[:, 'fund'] = fund
+
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
 
-        return df[['ticker', 'shares', 'weight', 'date']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
-def jpm(url, last_updated_date):
+def jpm(url, last_updated_date, fund):
     df = pd.read_excel(url, header=None)
 
     date = datetime.strptime((df[7][5]).split(':')[1].strip(' '), '%m/%d/%Y')
-    nDate = date.strftime('%d/%m/%Y')
 
     if last_updated_date < date:
         df = df.drop([0, 1, 2, 3, 4, 5, 6])
@@ -187,21 +189,23 @@ def jpm(url, last_updated_date):
 
         df = df[df['Currency'] == 'USD']
 
-        df.loc[:, 'date'] = nDate
+        df.loc[:, 'date'] = date
+        df.loc[:, 'fund'] = fund
 
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'weight', 'date']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
 def main():
-    etf = invesco(
-        'https://www.invesco.com/us/financial-products/etfs/holdings/main/holdings/0?audienceType=Investor&action=download&ticker=qqq',
-        datetime.strptime('01/01/1990', '%d/%m/%Y'))
+    etf = gs(
+        'https://www.gsam.com/content/dam/gsam/xls/us/en/etf/Goldman%20Sachs%20ActiveBeta%20U.S.%20Small%20Cap%20Equity%20ETF_9107.xlsx',
+        datetime.strptime('01/01/1990', '%d/%m/%Y'), 'gssc')
 
-    for e in list(etf['ticker']):
-        print(e, ':', len(e))
+    # for e in list(etf['ticker']):
+    #     print(e, ':', len(e))
+    print(etf)
 
 
 if __name__ == '__main__':

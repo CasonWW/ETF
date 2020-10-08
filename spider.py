@@ -13,8 +13,6 @@ def ark(url, last_updated_date, fund):
 
     if last_updated_date < date:
         df = df[df["ticker"].notnull()]
-        df = df.rename({'weight(%)': 'weight'},
-                       axis='columns')
         df.loc[:, 'date'] = date
         df.loc[:, 'fund'] = fund
 
@@ -27,7 +25,7 @@ def invesco(url, last_updated_date, fund):
     date = datetime.strptime(df['Date'][0], '%m/%d/%Y')
 
     if last_updated_date < date:
-        df = df.rename({'Holding Ticker': 'ticker', 'Shares/Par Value': 'shares', 'Weight': 'weight', 'Date': 'date'},
+        df = df.rename({'Holding Ticker': 'ticker', 'Shares/Par Value': 'shares', 'Date': 'date'},
                        axis='columns')
 
         df = df[df['ticker'].notnull()]
@@ -87,7 +85,7 @@ def spdr(url, last_updated_date, fund):
 
         df = pd.DataFrame(data[1:-1], columns=data[0])
 
-        df = df.rename({'Ticker': 'ticker', 'Weight': 'weight', 'SharesHeld': 'shares'}, axis='columns')
+        df = df.rename({'Ticker': 'ticker', 'SharesHeld': 'shares'}, axis='columns')
         df = df[df['ticker'].notnull()]
 
         if 'LocalCurrency' in df.columns:
@@ -133,7 +131,7 @@ def i_shares(url, last_updated_date, fund):
         df = df[(df['Ticker'] != '-')]
         df = df[(df['Exchange'] == 'New York Stock Exchange Inc.') | (df['Exchange'] == 'NASDAQ')]
 
-        df = df.rename({'Ticker': 'ticker', 'Shares': 'shares', 'Weight(%)': 'weight'}, axis='columns')
+        df = df.rename({'Ticker': 'ticker', 'Shares': 'shares'}, axis='columns')
         df.loc[:, 'date'] = date
         df.loc[:, 'fund'] = fund
         df = df.reset_index()
@@ -156,7 +154,7 @@ def gs(url, last_updated_date, fund):
 
         df = pd.DataFrame(data[1:-1], columns=data[0])
 
-        df = df.rename({'Ticker': 'ticker', '%Weighting': 'weight', 'NumberofShares': 'shares', 'Date': 'date'},
+        df = df.rename({'Ticker': 'ticker', 'NumberofShares': 'shares', 'Date': 'date'},
                        axis='columns')
         df = df[df['ticker'].notnull()]
         df = df[df['Cusip'] != '--']
@@ -184,7 +182,7 @@ def jpm(url, last_updated_date, fund):
             data[0][i] = re.compile(' ').sub('', str(data[0][i]))
 
         df = pd.DataFrame(data[1:-1], columns=data[0])
-        df = df.rename({'Ticker': 'ticker', '%ofNetAssets': 'weight', 'Shares/Par': 'shares'}, axis='columns')
+        df = df.rename({'Ticker': 'ticker', 'Shares/Par': 'shares'}, axis='columns')
         df = df[df['ticker'].notnull()]
 
         df = df[df['Currency'] == 'USD']

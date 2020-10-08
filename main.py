@@ -25,7 +25,7 @@ def cal_change(fund, etf, last_updated_date, date):
 
     for index, row in old_df.iterrows():
         if row[0] not in etf['ticker'].values:
-            etf.append({'ticker': row[0], 'shares': 0, 'weight': '0', 'date': date, 'change': -row[1]},
+            etf.append({'ticker': row[0], 'shares': 0,  'date': date, 'change': -row[1]},
                        ignore_index=True)
 
     return etf
@@ -49,8 +49,8 @@ def main(fund, url, agency, last_updated_date):
         date = etf_df['date'][0]
         etf_df = cal_change(fund, etf_df, last_updated_date, date)
         print(etf_df)
-        # dataframe_to_mongo(fund, etf_df)
-        # update_date(fund, date)
+        dataframe_to_mongo(fund, etf_df)
+        update_date(fund, date)
         print(fund, "|", date, "|", agency)
 
 

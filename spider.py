@@ -18,7 +18,7 @@ def ark(url, last_updated_date, fund):
         df.loc[:, 'date'] = date
         df.loc[:, 'fund'] = fund
 
-        return df[['ticker', 'shares', 'weight', 'date''fund']]
+        return df[['ticker', 'shares', 'date','fund']]
 
 
 def invesco(url, last_updated_date, fund):
@@ -37,7 +37,7 @@ def invesco(url, last_updated_date, fund):
         df['ticker'] = df['ticker'].str.replace(' ', '').astype(str)
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
 
-        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
+        return df[['ticker', 'shares', 'date', 'fund']]
 
 
 def pro_shares(url, last_updated_date, fund):
@@ -101,7 +101,7 @@ def spdr(url, last_updated_date, fund):
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
+        return df[['ticker', 'shares', 'date', 'fund']]
 
 
 def i_shares(url, last_updated_date, fund):
@@ -138,7 +138,7 @@ def i_shares(url, last_updated_date, fund):
         df.loc[:, 'fund'] = fund
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
+        return df[['ticker', 'shares', 'date', 'fund']]
 
 
 def gs(url, last_updated_date, fund):
@@ -167,7 +167,7 @@ def gs(url, last_updated_date, fund):
 
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
 
-        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
+        return df[['ticker', 'shares', 'date', 'fund']]
 
 
 def jpm(url, last_updated_date, fund):
@@ -195,7 +195,7 @@ def jpm(url, last_updated_date, fund):
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
+        return df[['ticker', 'shares', 'date', 'fund']]
 
 
 def main():

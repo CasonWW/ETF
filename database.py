@@ -5,8 +5,8 @@ client = pymongo.MongoClient(MongoDB)
 database = client["ETF"]
 
 
-def dataframe_to_mongo(fund, df):
-    collection = database[fund]
+def dataframe_to_mongo(df):
+    collection = database['etf_data']
 
     records = df.to_dict('records')
     collection.insert_many(records)
@@ -34,9 +34,9 @@ def test_connection():
 
 
 def get_old_etf_data_by_fund(fund, last_updated_date):
-    collection = database[fund]
+    collection = database['etf_data']
 
-    return list(collection.find({'date': last_updated_date}, {'_id': 0, 'weight': 0}))
+    return list(collection.find({'fund': fund, 'date': last_updated_date}, {'_id': 0, 'weight': 0}))
 
 
 def main():

@@ -49,8 +49,8 @@ def main(fund, url, agency, last_updated_date):
         date = etf_df['date'][0]
         etf_df = cal_change(fund, etf_df, last_updated_date, date)
         print(etf_df)
-        dataframe_to_mongo(fund, etf_df)
-        update_date(fund, date)
+        # dataframe_to_mongo(fund, etf_df)
+        # update_date(fund, date)
         print(fund, "|", date, "|", agency)
 
 
@@ -68,7 +68,7 @@ if __name__ == '__main__':
             print(fund, "|", last_updated_date, "|", agency)
 
             # if last_updated_date.weekday() != 4:
-            # if 'GS' in ETF['agency']:
+            # if 'ARK' in ETF['agency']:
             main(fund, url, agency, last_updated_date)
             time.sleep(5)
 

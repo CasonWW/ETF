@@ -1,9 +1,12 @@
 from database import get_etf_list, dataframe_to_mongo, update_date, get_old_etf_data_by_fund
 import time
 from spider import ark, invesco, pro_shares, spdr, i_shares, gs, jpm
-from datetime import datetime
 import pandas as pd
 import logging
+import schedule
+import push as Push
+from datetime import datetime
+
 
 # init logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M',
@@ -25,13 +28,13 @@ def cal_change(fund, etf, last_updated_date, date):
 
     for index, row in old_df.iterrows():
         if row[0] not in etf['ticker'].values:
-            etf.append({'ticker': row[0], 'shares': 0,  'date': date, 'change': -row[1]},
+            etf.append({'ticker': row[0], 'shares': 0, 'date': date, 'change': -row[1]},
                        ignore_index=True)
 
     return etf
 
 
-def main(fund, url, agency, last_updated_date):
+def main(fund, url, agency, last_updated_date, ark_u):
     def _etf(agency):
         return {
             'ARK': lambda x, y, z: ark(x, y, z),
@@ -49,12 +52,15 @@ def main(fund, url, agency, last_updated_date):
         date = etf_df['date'][0]
         etf_df = cal_change(fund, etf_df, last_updated_date, date)
         print(etf_df)
-        dataframe_to_mongo(fund, etf_df)
+        dataframe_to_mongo(etf_df)
         update_date(fund, date)
         print(fund, "|", date, "|", agency)
+        if agency is 'ARK':
+            return ark_u + 1
 
 
-if __name__ == '__main__':
+def start():
+    ark_u = 0
     ETFs = get_etf_list()
     print('Fund', "|", 'Last Updated Date', "|", 'Agency')
     for ETF in ETFs:
@@ -68,11 +74,40 @@ if __name__ == '__main__':
             print(fund, "|", last_updated_date, "|", agency)
 
             # if last_updated_date.weekday() != 4:
-            # if 'ARK' in ETF['agency']:
-            main(fund, url, agency, last_updated_date)
+            # if 'Invesco' in ETF['agency']:
+            ark_u = main(fund, url, agency, last_updated_date, ark_u)
             time.sleep(5)
+
+            # 10 16 20
+            if ark_u is not 0:
+                Push('ARK', 'd')
+            elif ark_u is not 0 and datetime.today().weekday() is 5:
+                Push('ARK', 'w')
 
         except Exception as Argument:
             logging.error('ETF', ETF['fund'], ':\nThis is the Argument:', Argument)
 
     print('Done! ')
+
+
+if __name__ == '__main__':
+    schedule.every().monday.at("12:00").do(start)
+    schedule.every().monday.at("20:00").do(start)
+    schedule.every().tuesday.at("09:00").do(start)
+    schedule.every().tuesday.at("18:00").do(start)
+    schedule.every().tuesday.at("21:20").do(start)
+    schedule.every().wednesday.at("09:00").do(start)
+    schedule.every().wednesday.at("18:00").do(start)
+    schedule.every().wednesday.at("21:20").do(start)
+    schedule.every().thursday.at("09:00").do(start)
+    schedule.every().thursday.at("18:00").do(start)
+    schedule.every().thursday.at("21:20").do(start)
+    schedule.every().friday.at("09:00").do(start)
+    schedule.every().friday.at("18:00").do(start)
+    schedule.every().friday.at("21:20").do(start)
+    schedule.every().saturday.at("09:00").do(start)
+    schedule.every().saturday.at("18:00").do(start)
+
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

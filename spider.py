@@ -16,7 +16,7 @@ def ark(url, last_updated_date, fund):
         df.loc[:, 'date'] = date
         df.loc[:, 'fund'] = fund
 
-        return df[['ticker', 'shares', 'date','fund']]
+        return df[['ticker', 'shares', 'date', 'fund']]
 
 
 def invesco(url, last_updated_date, fund):
@@ -39,7 +39,11 @@ def invesco(url, last_updated_date, fund):
 
 
 def pro_shares(url, last_updated_date, fund):
-    req = requests.get(url)
+    try:
+        req = requests.get(url)
+    except requests.exceptions.ConnectionError:
+        req = requests.get(url)
+
     df = pd.read_csv(io.StringIO(req.content.decode('utf-8')), sep="\t", header=None)
 
     date = datetime.strptime(str(df.iat[1, 0])[6:15], '%m/%d/%Y')

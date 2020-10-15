@@ -13,10 +13,12 @@ def ark(url, last_updated_date, fund):
 
     if last_updated_date < date:
         df = df[df["ticker"].notnull()]
+        df = df.rename({'weight(%)': 'weight'},
+                       axis='columns')
         df.loc[:, 'date'] = date
         df.loc[:, 'fund'] = fund
 
-        return df[['ticker', 'shares', 'date', 'fund']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
 def invesco(url, last_updated_date, fund):
@@ -25,7 +27,7 @@ def invesco(url, last_updated_date, fund):
     date = datetime.strptime(df['Date'][0], '%m/%d/%Y')
 
     if last_updated_date < date:
-        df = df.rename({'Holding Ticker': 'ticker', 'Shares/Par Value': 'shares', 'Date': 'date'},
+        df = df.rename({'Holding Ticker': 'ticker', 'Shares/Par Value': 'shares', 'Weight': 'weight', 'Date': 'date'},
                        axis='columns')
 
         df = df[df['ticker'].notnull()]
@@ -35,7 +37,7 @@ def invesco(url, last_updated_date, fund):
         df['ticker'] = df['ticker'].str.replace(' ', '').astype(str)
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
 
-        return df[['ticker', 'shares', 'date', 'fund']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
 def pro_shares(url, last_updated_date, fund):
@@ -46,7 +48,7 @@ def pro_shares(url, last_updated_date, fund):
 
     df = pd.read_csv(io.StringIO(req.content.decode('utf-8')), sep="\t", header=None)
 
-    date = datetime.strptime(str(df.iat[1, 0])[6:15], '%m/%d/%Y')
+    date = datetime.strptime(df.iat[1, 0][6:(len(df.iat[1, 0]) - 4)], '%m/%d/%Y')
 
     if last_updated_date < date:
         df = df.drop([0, 1, 2])
@@ -89,7 +91,7 @@ def spdr(url, last_updated_date, fund):
 
         df = pd.DataFrame(data[1:-1], columns=data[0])
 
-        df = df.rename({'Ticker': 'ticker', 'SharesHeld': 'shares'}, axis='columns')
+        df = df.rename({'Ticker': 'ticker', 'Weight': 'weight', 'SharesHeld': 'shares'}, axis='columns')
         df = df[df['ticker'].notnull()]
 
         if 'LocalCurrency' in df.columns:
@@ -103,7 +105,7 @@ def spdr(url, last_updated_date, fund):
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'date', 'fund']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
 def i_shares(url, last_updated_date, fund):
@@ -135,12 +137,12 @@ def i_shares(url, last_updated_date, fund):
         df = df[(df['Ticker'] != '-')]
         df = df[(df['Exchange'] == 'New York Stock Exchange Inc.') | (df['Exchange'] == 'NASDAQ')]
 
-        df = df.rename({'Ticker': 'ticker', 'Shares': 'shares'}, axis='columns')
+        df = df.rename({'Ticker': 'ticker', 'Shares': 'shares', 'Weight(%)': 'weight'}, axis='columns')
         df.loc[:, 'date'] = date
         df.loc[:, 'fund'] = fund
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'date', 'fund']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
 def gs(url, last_updated_date, fund):
@@ -158,7 +160,7 @@ def gs(url, last_updated_date, fund):
 
         df = pd.DataFrame(data[1:-1], columns=data[0])
 
-        df = df.rename({'Ticker': 'ticker', 'NumberofShares': 'shares', 'Date': 'date'},
+        df = df.rename({'Ticker': 'ticker', '%Weighting': 'weight', 'NumberofShares': 'shares', 'Date': 'date'},
                        axis='columns')
         df = df[df['ticker'].notnull()]
         df = df[df['Cusip'] != '--']
@@ -169,7 +171,7 @@ def gs(url, last_updated_date, fund):
 
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
 
-        return df[['ticker', 'shares', 'date', 'fund']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
 def jpm(url, last_updated_date, fund):
@@ -186,7 +188,7 @@ def jpm(url, last_updated_date, fund):
             data[0][i] = re.compile(' ').sub('', str(data[0][i]))
 
         df = pd.DataFrame(data[1:-1], columns=data[0])
-        df = df.rename({'Ticker': 'ticker', 'Shares/Par': 'shares'}, axis='columns')
+        df = df.rename({'Ticker': 'ticker', '%ofNetAssets': 'weight', 'Shares/Par': 'shares'}, axis='columns')
         df = df[df['ticker'].notnull()]
 
         df = df[df['Currency'] == 'USD']
@@ -197,7 +199,7 @@ def jpm(url, last_updated_date, fund):
         df['shares'] = df['shares'].str.replace(',', '').astype(float)
         df = df.reset_index()
 
-        return df[['ticker', 'shares', 'date', 'fund']]
+        return df[['ticker', 'shares', 'weight', 'date', 'fund']]
 
 
 def main():

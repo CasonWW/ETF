@@ -4,13 +4,13 @@ from spider import ark, invesco, pro_shares, spdr, i_shares, gs, jpm
 import pandas as pd
 import logging
 import schedule
-import push as Push
+from push import push as Push
 from datetime import datetime
-
 
 # init logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(levelname)s %(message)s', datefmt='%Y-%m-%d %H:%M',
                     handlers=[logging.FileHandler('error.log', 'w', 'utf-8'), ])
+ark_c = 0
 
 
 def cal_change(fund, etf, last_updated_date, date):
@@ -44,7 +44,6 @@ def main(fund, url, agency, last_updated_date, ark_u):
             'iShare': lambda x, y, z: i_shares(x, y, z),
             'GS': lambda x, y, z: gs(x, y, z),
             'JPM': lambda x, y, z: jpm(x, y, z)
-
         }[agency](url, last_updated_date, fund)
 
     etf_df = _etf(agency=agency)
@@ -55,8 +54,10 @@ def main(fund, url, agency, last_updated_date, ark_u):
         dataframe_to_mongo(etf_df)
         update_date(fund, date)
         print(fund, "|", date, "|", agency)
-        if agency is 'ARK':
+        if agency in 'ARK':
             return ark_u + 1
+        else:
+            return ark_u
 
 
 def start():
@@ -77,37 +78,45 @@ def start():
             # if 'Invesco' in ETF['agency']:
             ark_u = main(fund, url, agency, last_updated_date, ark_u)
             time.sleep(5)
-
             # 10 16 20
-            if ark_u is not 0:
-                Push('ARK', 'd')
-            elif ark_u is not 0 and datetime.today().weekday() is 5:
-                Push('ARK', 'w')
+
+
 
         except Exception as Argument:
             logging.error('ETF', ETF['fund'], ':\nThis is the Argument:', Argument)
+
+    if ark_u is not 0:
+        print(ark_u)
+        Push('d')
+    elif ark_u is not 0 and datetime.today().weekday() is 5:
+        Push('w')
 
     print('Done! ')
 
 
 if __name__ == '__main__':
-    schedule.every().monday.at("12:00").do(start)
-    schedule.every().monday.at("20:00").do(start)
-    schedule.every().tuesday.at("09:00").do(start)
-    schedule.every().tuesday.at("18:00").do(start)
-    schedule.every().tuesday.at("21:20").do(start)
-    schedule.every().wednesday.at("09:00").do(start)
-    schedule.every().wednesday.at("18:00").do(start)
-    schedule.every().wednesday.at("21:20").do(start)
-    schedule.every().thursday.at("09:00").do(start)
-    schedule.every().thursday.at("18:00").do(start)
-    schedule.every().thursday.at("21:20").do(start)
-    schedule.every().friday.at("09:00").do(start)
-    schedule.every().friday.at("18:00").do(start)
-    schedule.every().friday.at("21:20").do(start)
-    schedule.every().saturday.at("09:00").do(start)
-    schedule.every().saturday.at("18:00").do(start)
-
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
+    # schedule.every().monday.at("12:00").do(start)
+    # schedule.every().monday.at("20:00").do(start)
+    # schedule.every().tuesday.at("09:00").do(start)
+    # schedule.every().tuesday.at("12:00").do(start)
+    # schedule.every().tuesday.at("18:00").do(start)
+    # schedule.every().tuesday.at("21:20").do(start)
+    # schedule.every().wednesday.at("09:00").do(start)
+    # schedule.every().wednesday.at("12:00").do(start)
+    # schedule.every().wednesday.at("18:00").do(start)
+    # schedule.every().wednesday.at("21:20").do(start)
+    # schedule.every().thursday.at("09:00").do(start)
+    # schedule.every().thursday.at("12:00").do(start)
+    # schedule.every().thursday.at("18:00").do(start)
+    # schedule.every().thursday.at("21:20").do(start)
+    # schedule.every().friday.at("09:00").do(start)
+    # schedule.every().friday.at("12:00").do(start)
+    # schedule.every().friday.at("18:00").do(start)
+    # schedule.every().friday.at("21:20").do(start)
+    # schedule.every().saturday.at("09:00").do(start)
+    # schedule.every().saturday.at("18:00").do(start)
+    #
+    # while True:
+    #     schedule.run_pending()
+    #     time.sleep(1)
+    start()

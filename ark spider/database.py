@@ -2,7 +2,7 @@ import pymongo
 from config import MongoDB
 
 client = pymongo.MongoClient(MongoDB)
-database = client["ETF"]
+database = client["ARK"]
 
 
 def dataframe_to_mongo(df):
@@ -36,15 +36,6 @@ def update_date(fund, date):
     collection.update_one({'fund': fund}, {"$set": {'last_updated_date': date}})
 
 
-def test_connection():
-    maxSevSelDelay = 1
-    try:
-        c = pymongo.MongoClient(MongoDB, serverSelectionTimeoutMS=maxSevSelDelay)
-        c.server_info()
-    except pymongo.errors.ServerSelectionTimeoutError as err:
-        print(err)
-
-
 def get_old_etf_data_by_fund(fund, last_updated_date):
     collection = database['etf_data']
 
@@ -52,7 +43,7 @@ def get_old_etf_data_by_fund(fund, last_updated_date):
 
 
 def main():
-    test_connection()
+    get_etf_list()
 
 
 if __name__ == "__main__":
